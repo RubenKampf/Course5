@@ -61,7 +61,7 @@ class DataCollector:
         return self.dir_path+outfile
 
     def hmm_search(self):
-        os.system("hmmsearch "+self.profile_path+" nr")  # "Usage: hmmsearch [options] <hmmfile> <seqdb>"
+        os.system("hmmsearch HMM nr")  # "Usage: hmmsearch [options] <hmmfile> <seqdb>"
         # What's a valid seqdb? Not in HMMer manual.
 
     def insert(self, table, data):  # Todo
