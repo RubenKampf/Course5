@@ -4,7 +4,7 @@ from mysql import connector
 
 """ 
    Important: Run in linux/a windows-ubuntu terminal 
- Will probably want to change the filepath (see main) too.
+ Will probably want to change the filepath (see main()) too.
 """
 
 """
@@ -35,16 +35,17 @@ class DataCollector:
         self.database = mysql.connector.connect(host=host, user=user, password=passw, db=dbname)
         self.cursor = self.database.cursor(buffered=True)
 
+        # Low priority: Simplify this path thing?
         self.dir_path = path
-        self.msa_path = self.make_msa(self.dir_path + "/X4R0Q4-treS.fasta", "mafft_msa.fasta")
+        self.msa_path = self.make_msa(self.dir_path + "/initial.fasta", "mafft_msa.fasta")
         self.profile_path = self.make_hmm_profile(self.dir_path + "/HMM", self.msa_path)
 
-    def go_once(self):  # Todo
+    def go_once(self):
         """ Shortcut for one whole "MSA > HMM > HMM seqs > new MSA" iteration """
-        self.make_msa()
-        self.make_hmm_profile()
+        self.make_msa("mafft_msa.fasta", "mafft_msa.fasta")
+        self.make_hmm_profile("HMM", "mafft_msa.fasta")
         self.hmm_search()
-        self.make_msa()
+        self.make_msa("mafft_msa.fasta", "mafft_msa.fasta")
 
     def make_msa(self, infile, outfile):  # Todo: (Auto-)Create initial MSA before using this?
         """Creates a sorted MSA using mafft, output in fasta format.
@@ -60,11 +61,15 @@ class DataCollector:
         return self.dir_path+outfile
 
     def hmm_search(self):
-        os.system("hmmsearch "+self.profile_path+" ")  # "Usage: hmmsearch [options] <hmmfile> <seqdb>"
+        os.system("hmmsearch "+self.profile_path+" nr")  # "Usage: hmmsearch [options] <hmmfile> <seqdb>"
+        # What's a valid seqdb? Not in HMMer manual.
 
     def insert(self, table, data):  # Todo
-        """To make: Generic, reuseable database insertion?"""
-        pass
+        """To make: Generic, reuseable database insertion?
+        Zlxo get the data out of the files."""
+        query = ""
+        self.cursor.execute(query)
+        self.database.commit()
 
 
 def main():
@@ -72,7 +77,7 @@ def main():
     filepath = "/mnt/d/'Bioinformatica (Opleiding)'/Files/'Weektaken Jaar 2'/'Jaar2Blok1 project'"
     os.system("cd "+filepath)
     collector = DataCollector(filepath)
-    for _ in range(10):
+    for _ in range(3):
         collector.go_once()
     #database insertions here?
 
