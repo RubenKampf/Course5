@@ -21,7 +21,6 @@ T-Coffee - MSA's  (Exact, I think? Servers offline at time of writing so eh.)
 MAFFT    - MSA's  (https://mafft.cbrc.jp/alignment/software/about.html)
 MUSCLE   - MSA's
 HMMer    - HMM's
-Biopython- Voorgemaakte MSA, HMM etc objecten?
 """
 # os.system("ubuntu")  # Doesn't work, just run from linux terminal.
 
@@ -45,9 +44,9 @@ class DataCollector:
         self.make_msa("mafft_msa.fasta", "mafft_msa.fasta")
         self.make_hmm_profile("HMM", "mafft_msa.fasta")
         self.hmm_search()
-        self.make_msa("mafft_msa.fasta", "mafft_msa.fasta")
+        self.make_msa("HMMsearch", "mafft_msa.fasta")
 
-    def make_msa(self, infile, outfile):  # Todo: (Auto-)Create initial MSA before using this?
+    def make_msa(self, infile, outfile):
         """Creates a sorted MSA using mafft, output in fasta format.
         :param infile: Input file, A FASTA file with at least two sequences.
         :param outfile: Output file, any filename.
@@ -61,12 +60,13 @@ class DataCollector:
         return self.dir_path+outfile
 
     def hmm_search(self):
-        os.system("hmmsearch HMM nr")  # "Usage: hmmsearch [options] <hmmfile> <seqdb>"
+        os.system("hmmsearch -o HMMsearch HMM nr")  # "Usage: hmmsearch [options] <hmmfile> <seqdb>"
         # What's a valid seqdb? Not in HMMer manual.
+        # -o <filename> - Save results to file.
 
     def insert(self, table, data):  # Todo
         """To make: Generic, reuseable database insertion?
-        Zlxo get the data out of the files."""
+        Also get the data out of the files."""
         query = ""
         self.cursor.execute(query)
         self.database.commit()
