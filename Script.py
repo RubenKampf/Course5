@@ -34,14 +34,13 @@ class DataCollector:
         self.database = mysql.connector.connect(host=host, user=user, password=passw, db=dbname)
         self.cursor = self.database.cursor(buffered=True)
 
-        # Low priority: Simplify this path thing?
-        self.dir_path = path
-        self.msa_path = self.make_msa(self.dir_path + "/initial.fasta", "mafft_msa.fasta")
-        self.profile_path = self.make_hmm_profile(self.dir_path + "/HMM", self.msa_path)
+        # Waste of time, just put the files in the same place as the script
+        # self.dir_path = path
+        # self.msa_path = self.make_msa(self.dir_path + "/initial.fasta", "mafft_msa.fasta")
+        # self.profile_path = self.make_hmm_profile(self.dir_path + "/HMM", self.msa_path)
 
     def go_once(self):
-        """ Shortcut for one whole "MSA > HMM > HMM seqs > new MSA" iteration """
-        self.make_msa("mafft_msa.fasta", "mafft_msa.fasta")
+        """ Shortcut for one whole "(MSA >) HMM > HMM seqs > new MSA" iteration """
         self.make_hmm_profile("HMM", "mafft_msa.fasta")
         self.hmm_search()
         self.make_msa("HMMsearch", "mafft_msa.fasta")
@@ -52,21 +51,23 @@ class DataCollector:
         :param outfile: Output file, any filename.
         :return: Path to MSA file. Might not be needed?
         """
-        os.system("mafft --auto --reorder \""+infile+"\" > \""+outfile+"\"")
-        return self.dir_path+outfile
+        os.system("mafft --auto --reorder "+infile+" > "+outfile)
+        os.system("")
 
     def make_hmm_profile(self, outfile, msafile):
         os.system("hmmbuild "+outfile+" "+msafile)  # "Usage: hmmbuild [-options] <hmmfile_out> <msafile>"
-        return self.dir_path+outfile
 
     def hmm_search(self):
-        os.system("hmmsearch -o HMMsearch HMM nr")  # "Usage: hmmsearch [options] <hmmfile> <seqdb>"
-        # What's a valid seqdb? Not in HMMer manual.
-        # -o <filename> - Save results to file.
+        os.system("hmmsearch -A HMMsearch HMM mafft_msa.fasta")  # "Usage: hmmsearch [options] <hmmfile> <seqdb>"
+        # What's valid for "seqdb"? Not in HMMer manual. # Fixme: Current main problem
+        #   An MSA file (apparently) works? (Good output in a few tests, now gives fatal errors (Reasons unknown).)
+        # -o - Save whole output to file (Human readable, not very computer-readable)
+        # -A - Save results to file in MSA format?
 
     def insert(self, table, data):  # Todo
         """To make: Generic, reuseable database insertion?
-        Also get the data out of the files."""
+        Also get the data out of the files.
+        Also, what data is needed?"""
         query = ""
         self.cursor.execute(query)
         self.database.commit()
@@ -77,12 +78,17 @@ def main():
     filepath = "/mnt/d/'Bioinformatica (Opleiding)'/Files/'Weektaken Jaar 2'/'Jaar2Blok1 project'"
     os.system("cd "+filepath)
     collector = DataCollector(filepath)
-    for _ in range(3):
-        collector.go_once()
+    collector.make_msa("initial.fasta", "mafft_msa.fasta")
+    for _ in range(1):
+        # collector.go_once()
+        # print("\n ##### Finished one loop \n")
+        collector.make_hmm_profile("HMM", "mafft_msa.fasta")
+        print("\n ##### HMM profile finished \n")
+        collector.hmm_search()
+        print("\n ##### HMM search finished \n")
+        collector.make_msa("HMMsearch", "mafft_msa.fasta")
+        print("\n ##### New MSA finished \n")
     #database insertions here?
 
 
-# Example automating terminal input
-# os.system("cd /mnt/d/'Bioinformatica (Opleiding)'/Files/'Weektaken Jaar 2'")
-# print(os.popen("ls").read())
-# https://linuxhandbook.com/execute-shell-command-python/
+main()
