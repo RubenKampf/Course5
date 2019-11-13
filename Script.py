@@ -43,7 +43,7 @@ class DataCollector:
         """ Shortcut for one whole "(MSA >) HMM > HMM seqs > new MSA" iteration """
         self.make_hmm_profile("HMM", "mafft_msa.fasta")
         self.hmm_search()
-        self.make_msa("HMMsearch", "mafft_msa.fasta")
+        self.make_msa("HMMsearch", "mafft_msa.fasta")  # Predicted problem: Mafft might not do backconversions
 
     def make_msa(self, infile, outfile):
         """Creates a sorted MSA using mafft, output in fasta format.
@@ -64,11 +64,11 @@ class DataCollector:
         # -o - Save whole output to file (Human readable, not very computer-readable)
         # -A - Save results to file in MSA format?
 
-    def insert(self, table, data):  # Todo
+    def insert(self, table, columns, values):  # Todo
         """To make: Generic, reuseable database insertion?
         Also get the data out of the files.
         Also, what data is needed?"""
-        query = ""
+        query = "insert into "+table+"("+columns+") "+values
         self.cursor.execute(query)
         self.database.commit()
 
@@ -86,9 +86,9 @@ def main():
         print("\n ##### HMM profile finished \n")
         collector.hmm_search()
         print("\n ##### HMM search finished \n")
-        collector.make_msa("HMMsearch", "mafft_msa.fasta")
+        # collector.make_msa("HMMsearch", "mafft_msa.fasta")
         print("\n ##### New MSA finished \n")
-    #database insertions here?
+    # database insertions here?
 
 
 main()
